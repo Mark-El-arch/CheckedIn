@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Alert, ScrollView,
 } from "react-native";
-import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 
 const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -42,7 +42,7 @@ export default function CreateScreen({ navigation }) {
         createdAt: serverTimestamp(),
       });
 
-      await addDoc(collection(db, "challenges", docRef.id, "participants"), {
+      await setDoc(doc(db, "challenges", docRef.id, "participants", user.uid), {
         userId: user.uid,
         name: user.displayName,
         checkedIn: false,
