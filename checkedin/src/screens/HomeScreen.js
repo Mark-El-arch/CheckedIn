@@ -51,11 +51,11 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.greeting}>Hey, {user.displayName} 👋</Text>
           <Text style={styles.subtitle}>{challenges.length} active challenge{challenges.length !== 1 ? "s" : ""}</Text>
         </View>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {user.displayName?.charAt(0).toUpperCase()}
-          </Text>
-        </View>
+        <TouchableOpacity style={styles.avatar} onPress={() => navigation.navigate("Account")}>
+            <Text style={styles.avatarText}>
+                {user.displayName?.charAt(0).toUpperCase()}
+            </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
