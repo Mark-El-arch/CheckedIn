@@ -50,7 +50,13 @@ export default function CreateScreen({ navigation }) {
       });
 
       alert(`Challenge created! 🎉\n\nShare this code with your friends: ${code}`);
-      navigation.navigate("ChallengeDetail", { challengeId: docRef.id });
+        navigation.reset({
+        index: 1,
+        routes: [
+            { name: "Home" },
+            { name: "ChallengeDetail", params: { challengeId: docRef.id } },
+        ],
+      });
     } catch (err) {
       alert(err.message);
     }
