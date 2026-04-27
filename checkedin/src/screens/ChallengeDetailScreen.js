@@ -41,25 +41,19 @@ export default function ChallengeDetailScreen({ route }) {
   }, [challengeId]);
 
   const handleCheckIn = async () => {
-    Alert.alert("Check in?", "Confirm you've completed this challenge!", [
-      { text: "Cancel" },
-      {
-        text: "Yes, I did it! ✅",
-        onPress: async () => {
-          try {
-            await updateDoc(
-              doc(db, "challenges", challengeId, "participants", user.uid),
-              {
-                checkedIn: true,
-                checkedInAt: serverTimestamp(),
-              }
-            );
-          } catch (err) {
-            Alert.alert("Error", err.message);
-          }
-        },
-      },
-    ]);
+    const confirmed = window.confirm("Confirm you've completed this challenge!");
+    if (!confirmed) return;
+    try {
+      await updateDoc(
+        doc(db, "challenges", challengeId, "participants", user.uid),
+        {
+          checkedIn: true,
+          checkedInAt: serverTimestamp(),
+        }
+      );
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const myEntry = participants.find((p) => p.userId === user.uid);

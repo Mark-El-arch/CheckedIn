@@ -17,12 +17,12 @@ export default function CreateScreen({ navigation }) {
 
   const handleCreate = async () => {
     if (!title.trim()) {
-      Alert.alert("Oops", "Give your challenge a title.");
+      alert("Give your challenge a title.");
       return;
     }
     const days = parseInt(deadlineDays);
     if (isNaN(days) || days < 1) {
-      Alert.alert("Oops", "Enter a valid number of days.");
+      alert("Enter a valid number of days.");
       return;
     }
 
@@ -49,18 +49,10 @@ export default function CreateScreen({ navigation }) {
         checkedInAt: null,
       });
 
-      Alert.alert(
-        "Challenge created! 🎉",
-        `Share this code with your friends:\n\n${code}`,
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("ChallengeDetail", { challengeId: docRef.id }),
-          },
-        ]
-      );
+      alert(`Challenge created! 🎉\n\nShare this code with your friends: ${code}`);
+      navigation.navigate("ChallengeDetail", { challengeId: docRef.id });
     } catch (err) {
-      Alert.alert("Error", err.message);
+      alert(err.message);
     }
     setLoading(false);
   };
