@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, Alert, Image,
+  StyleSheet, Alert,
 } from "react-native";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { signOut } from "firebase/auth";
@@ -51,16 +51,10 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.greeting}>Hey, {user.displayName} 👋</Text>
           <Text style={styles.subtitle}>{challenges.length} active challenge{challenges.length !== 1 ? "s" : ""}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => navigation.navigate("Account")} style={styles.avatar}>
-            {user.photoURL ? (
-              <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>
-                {user.displayName?.charAt(0).toUpperCase()}
-              </Text>
-            )}
-          </TouchableOpacity>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {user.displayName?.charAt(0).toUpperCase()}
+          </Text>
         </View>
       </View>
 

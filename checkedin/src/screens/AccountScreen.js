@@ -1,15 +1,13 @@
 import { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, ScrollView, Image, Platform,
+  StyleSheet, Alert, ScrollView, Platform,
 } from "react-native";
 import {
   updateProfile, updateEmail, updatePassword,
   reauthenticateWithCredential, EmailAuthProvider, deleteUser,
 } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import * as ImagePicker from "expo-image-picker";
-import { auth, storage } from "../../firebase";
+import { auth } from "../../firebase";
 
 export default function AccountScreen({ navigation }) {
   const user = auth.currentUser;
@@ -32,7 +30,7 @@ export default function AccountScreen({ navigation }) {
     setLoading(true);
     try {
       await updateProfile(user, { displayName: displayName.trim() });
-      Alert.alert("Done", "Display name updated.");
+      Alert.alert("Done ✅", "Display name updated.");
     } catch (err) {
       Alert.alert("Error", err.message);
     }
@@ -48,7 +46,7 @@ export default function AccountScreen({ navigation }) {
     try {
       await reauthenticate();
       await updateEmail(user, email.trim());
-      Alert.alert("Done", "Email updated.");
+      Alert.alert("Done ✅", "Email updated.");
     } catch (err) {
       Alert.alert("Error", err.message);
     }
@@ -70,37 +68,7 @@ export default function AccountScreen({ navigation }) {
       await updatePassword(user, newPassword);
       setNewPassword("");
       setCurrentPassword("");
-      Alert.alert("Done", "Password updated.");
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-    setLoading(false);
-  };
-
-  const handlePickPhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permission needed", "Allow access to your photo library.");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
-    if (result.canceled) return;
-
-    setLoading(true);
-    try {
-      const uri = result.assets[0].uri;
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `avatars/${user.uid}`);
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-      await updateProfile(user, { photoURL: downloadURL });
-      Alert.alert("Done", "Profile picture updated.");
+      Alert.alert("Done ✅", "Password updated.");
     } catch (err) {
       Alert.alert("Error", err.message);
     }
@@ -110,7 +78,7 @@ export default function AccountScreen({ navigation }) {
   const handleDeleteAccount = () => {
     const doDelete = async () => {
       if (!currentPassword) {
-        Alert.alert("Required", "Enter your current password to delete account.");
+        Alert.alert("Required", "Enter your current password to delete your account.");
         return;
       }
       setLoading(true);
@@ -137,25 +105,15 @@ export default function AccountScreen({ navigation }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      {/* Profile Picture */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profile Picture</Text>
-        <View style={styles.avatarRow}>
-          <View style={styles.avatarLarge}>
-            {user.photoURL ? (
-              <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>
-                {user.displayName?.charAt(0).toUpperCase()}
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity style={styles.photoBtn} onPress={handlePickPhoto}>
-            <Text style={styles.photoBtnText}>
-              {loading ? "Uploading..." : "Change Photo"}
-            </Text>
-          </TouchableOpacity>
+      {/* Avatar */}
+      <View style={styles.avatarSection}>
+        <View style={styles.avatarLarge}>
+          <Text style={styles.avatarText}>
+            {user.displayName?.charAt(0).toUpperCase()}
+          </Text>
         </View>
+        <Text style={styles.avatarName}>{user.displayName}</Text>
+        <Text style={styles.avatarEmail}>{user.email}</Text>
       </View>
 
       {/* Display Name */}
@@ -169,11 +127,11 @@ export default function AccountScreen({ navigation }) {
           placeholderTextColor="#aaa"
         />
         <TouchableOpacity style={styles.btn} onPress={handleUpdateName} disabled={loading}>
-          <Text style={styles.btnText}>Update Name</Text>
+          <Text style={styles.btnText}>{loading ? "Saving..." : "Update Name"}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Current Password (shared for email/password/delete) */}
+      {/* Current Password */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Current Password</Text>
         <Text style={styles.hint}>Required for changing email, password, or deleting account.</Text>
@@ -189,7 +147,7 @@ export default function AccountScreen({ navigation }) {
 
       {/* Email */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Email</Text>
+        <Text style={styles.sectionTitle}>Email Address</Text>
         <TextInput
           style={styles.input}
           value={email}
@@ -200,11 +158,11 @@ export default function AccountScreen({ navigation }) {
           autoCapitalize="none"
         />
         <TouchableOpacity style={styles.btn} onPress={handleUpdateEmail} disabled={loading}>
-          <Text style={styles.btnText}>Update Email</Text>
+          <Text style={styles.btnText}>{loading ? "Saving..." : "Update Email"}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Password */}
+      {/* New Password */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>New Password</Text>
         <TextInput
@@ -216,7 +174,7 @@ export default function AccountScreen({ navigation }) {
           secureTextEntry
         />
         <TouchableOpacity style={styles.btn} onPress={handleUpdatePassword} disabled={loading}>
-          <Text style={styles.btnText}>Update Password</Text>
+          <Text style={styles.btnText}>{loading ? "Saving..." : "Update Password"}</Text>
         </TouchableOpacity>
       </View>
 
@@ -234,23 +192,21 @@ export default function AccountScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: "#F5F5F5", flexGrow: 1, paddingBottom: 60 },
+  avatarSection: { alignItems: "center", marginBottom: 24, paddingVertical: 24 },
+  avatarLarge: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: "#6C63FF", justifyContent: "center", alignItems: "center",
+    marginBottom: 12,
+  },
+  avatarText: { color: "#fff", fontSize: 32, fontWeight: "800" },
+  avatarName: { fontSize: 20, fontWeight: "700", color: "#1a1a2e" },
+  avatarEmail: { fontSize: 14, color: "#888", marginTop: 4 },
   section: {
     backgroundColor: "#fff", borderRadius: 16, padding: 18,
     marginBottom: 16, shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, elevation: 1,
   },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: "#1a1a2e", marginBottom: 12 },
   hint: { fontSize: 13, color: "#888", marginBottom: 10, lineHeight: 18 },
-  avatarRow: { flexDirection: "row", alignItems: "center", gap: 16 },
-  avatarLarge: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: "#6C63FF", justifyContent: "center", alignItems: "center",
-  },
-  avatarImage: { width: 72, height: 72, borderRadius: 36 },
-  avatarText: { color: "#fff", fontSize: 28, fontWeight: "800" },
-  photoBtn: {
-    backgroundColor: "#F0EEFF", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10,
-  },
-  photoBtnText: { color: "#6C63FF", fontWeight: "700" },
   input: {
     borderWidth: 1, borderColor: "#e0e0e0", borderRadius: 10,
     padding: 14, fontSize: 15, marginBottom: 12, color: "#000",
