@@ -3,6 +3,7 @@ import HomeScreen from "../screens/HomeScreen";
 import CreateScreen from "../screens/CreateScreen";
 import JoinScreen from "../screens/JoinScreen";
 import ChallengeDetailScreen from "../screens/ChallengeDetailScreen";
+import AccountScreen from "../screens/AccountScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Create" component={CreateScreen} options={{ title: "New Challenge" }} />
       <Stack.Screen name="Join" component={JoinScreen} options={{ title: "Join Challenge" }} />
       <Stack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} options={{ title: "Challenge" }} />
+      <Stack.Screen name="Account" component={AccountScreen} options={{ title: "Account Settings" }} />
     </Stack.Navigator>
   );
 }

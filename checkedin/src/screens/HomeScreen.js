@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, Alert,
+  StyleSheet, Alert, Image,
 } from "react-native";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { signOut } from "firebase/auth";
@@ -47,10 +47,21 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hey, {user.displayName} 👋</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logout}>Log out</Text>
-        </TouchableOpacity>
+        <View>
+          <Text style={styles.greeting}>Hey, {user.displayName} 👋</Text>
+          <Text style={styles.subtitle}>{challenges.length} active challenge{challenges.length !== 1 ? "s" : ""}</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate("Account")} style={styles.avatar}>
+            {user.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {user.displayName?.charAt(0).toUpperCase()}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -85,7 +96,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#6C63FF", padding: 20, paddingTop: 50,
   },
   greeting: { color: "#fff", fontSize: 18, fontWeight: "700" },
-  logout: { color: "#D9D6FF", fontSize: 14 },
+  subtitle: { color: "#D9D6FF", fontSize: 13, marginTop: 2 },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: {
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.3)",
+    justifyContent: "center", alignItems: "center",
+    borderWidth: 2, borderColor: "rgba(255,255,255,0.6)",
+  },
+  avatarImage: { width: 42, height: 42, borderRadius: 21 },
+  avatarText: { color: "#fff", fontWeight: "800", fontSize: 18 },
   card: {
     backgroundColor: "#fff", margin: 12, marginBottom: 0,
     borderRadius: 14, padding: 18,
