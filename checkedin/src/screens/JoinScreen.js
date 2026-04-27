@@ -61,6 +61,7 @@ export default function JoinScreen({ navigation }) {
       <TextInput
         style={styles.codeInput}
         placeholder="e.g. XK92PL"
+        placeholderTextColor="#aaa"
         value={code}
         onChangeText={setCode}
         autoCapitalize="characters"
@@ -83,6 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff", borderRadius: 14, padding: 18,
     fontSize: 28, fontWeight: "800", textAlign: "center", letterSpacing: 8,
     borderWidth: 2, borderColor: "#6C63FF", color: "#1a1a2e",
+    color: "#000",
   },
   button: {
     backgroundColor: "#6C63FF", padding: 18, borderRadius: 14,

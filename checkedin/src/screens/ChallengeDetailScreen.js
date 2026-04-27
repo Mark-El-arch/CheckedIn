@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, Alert,
+  StyleSheet, Alert, Platform,
 } from "react-native";
 import {
-  doc, onSnapshot, collection, updateDoc, serverTimestamp,
+  doc, onSnapshot, collection, updateDoc,
+  serverTimestamp, deleteDoc, getDocs,
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 
-export default function ChallengeDetailScreen({ route }) {
+export default function ChallengeDetailScreen({ route, navigation }) {
   const { challengeId } = route.params;
   const [challenge, setChallenge] = useState(null);
   const [participants, setParticipants] = useState([]);
   const user = auth.currentUser;
 
-  // Listen to challenge document in real-time
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "challenges", challengeId), (snap) => {
       if (snap.exists()) setChallenge({ id: snap.id, ...snap.data() });
@@ -22,13 +22,11 @@ export default function ChallengeDetailScreen({ route }) {
     return unsub;
   }, [challengeId]);
 
-  // Listen to participants subcollection in real-time
   useEffect(() => {
     const unsub = onSnapshot(
       collection(db, "challenges", challengeId, "participants"),
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        // Checked-in participants appear first
         list.sort((a, b) => {
           if (a.checkedIn && !b.checkedIn) return -1;
           if (!a.checkedIn && b.checkedIn) return 1;
@@ -41,23 +39,63 @@ export default function ChallengeDetailScreen({ route }) {
   }, [challengeId]);
 
   const handleCheckIn = async () => {
-    const confirmed = window.confirm("Confirm you've completed this challenge!");
-    if (!confirmed) return;
-    try {
-      await updateDoc(
-        doc(db, "challenges", challengeId, "participants", user.uid),
-        {
-          checkedIn: true,
-          checkedInAt: serverTimestamp(),
-        }
-      );
-    } catch (err) {
-      alert(err.message);
+    const doCheckIn = async () => {
+      try {
+        await updateDoc(
+          doc(db, "challenges", challengeId, "participants", user.uid),
+          {
+            checkedIn: true,
+            checkedInAt: serverTimestamp(),
+          }
+        );
+      } catch (err) {
+        Alert.alert("Error", err.message);
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Confirm you've completed this challenge!");
+      if (confirmed) doCheckIn();
+    } else {
+      Alert.alert("Check in?", "Confirm you've completed this challenge!", [
+        { text: "Cancel" },
+        { text: "Yes, I did it! ✅", onPress: doCheckIn },
+      ]);
+    }
+  };
+
+  const handleDelete = async () => {
+    const doDelete = async () => {
+      try {
+        // Delete all participants first
+        const participantsSnap = await getDocs(
+          collection(db, "challenges", challengeId, "participants")
+        );
+        await Promise.all(
+          participantsSnap.docs.map((d) => deleteDoc(d.ref))
+        );
+        // Then delete the challenge itself
+        await deleteDoc(doc(db, "challenges", challengeId));
+        navigation.goBack();
+      } catch (err) {
+        Alert.alert("Error", err.message);
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Delete this challenge? This cannot be undone.");
+      if (confirmed) doDelete();
+    } else {
+      Alert.alert("Delete challenge?", "This cannot be undone.", [
+        { text: "Cancel" },
+        { text: "Delete", style: "destructive", onPress: doDelete },
+      ]);
     }
   };
 
   const myEntry = participants.find((p) => p.userId === user.uid);
   const alreadyCheckedIn = myEntry?.checkedIn === true;
+  const isCreator = challenge?.createdBy === user.uid;
 
   const getDeadlineText = () => {
     if (!challenge?.deadline) return "";
@@ -95,7 +133,14 @@ export default function ChallengeDetailScreen({ route }) {
   return (
     <View style={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{challenge.title}</Text>
+        <View style={styles.heroTop}>
+          <Text style={styles.heroTitle}>{challenge.title}</Text>
+          {isCreator && (
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+              <Text style={styles.deleteBtnText}>🗑 Delete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {challenge.description ? (
           <Text style={styles.heroDesc}>{challenge.description}</Text>
         ) : null}
@@ -132,7 +177,13 @@ export default function ChallengeDetailScreen({ route }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
   hero: { backgroundColor: "#6C63FF", padding: 24 },
-  heroTitle: { fontSize: 24, fontWeight: "800", color: "#fff" },
+  heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  heroTitle: { fontSize: 24, fontWeight: "800", color: "#fff", flex: 1 },
+  deleteBtn: {
+    backgroundColor: "rgba(255,0,0,0.2)", paddingHorizontal: 12,
+    paddingVertical: 6, borderRadius: 8, marginLeft: 12,
+  },
+  deleteBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 },
   heroDesc: { color: "#D9D6FF", marginTop: 8, fontSize: 15 },
   heroDeadline: { color: "#fff", marginTop: 12, fontWeight: "600" },
   codeBadge: {

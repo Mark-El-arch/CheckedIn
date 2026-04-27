@@ -63,6 +63,7 @@ export default function CreateScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="e.g. Swim 1km every day"
+        placeholderTextColor="#aaa"
         value={title}
         onChangeText={setTitle}
       />
@@ -71,6 +72,7 @@ export default function CreateScreen({ navigation }) {
       <TextInput
         style={[styles.input, styles.multiline]}
         placeholder="What are the rules?"
+        placeholderTextColor="#aaa"
         value={description}
         onChangeText={setDescription}
         multiline
@@ -81,6 +83,7 @@ export default function CreateScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="e.g. 7"
+        placeholderTextColor="#aaa"
         value={deadlineDays}
         onChangeText={setDeadlineDays}
         keyboardType="numeric"
@@ -101,6 +104,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#fff", borderRadius: 12, padding: 14,
     fontSize: 15, borderWidth: 1, borderColor: "#e0e0e0",
+    color: "#000",
   },
   multiline: { height: 100, textAlignVertical: "top" },
   button: {
