@@ -9,6 +9,7 @@ import {
   setDoc, increment, getDoc,
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
+import { sendPushNotification } from "../utils/notifications";
 
 const getTodayString = () => new Date().toISOString().split("T")[0];
 
@@ -60,7 +61,7 @@ export default function ChallengeDetailScreen({ route, navigation }) {
     const doCheckIn = async () => {
       const today = getTodayString();
       try {
-        // Store this day's check-in
+        // Store today's check-in
         await setDoc(
           doc(db, "challenges", challengeId, "participants", user.uid, "checkIns", today),
           { checkedInAt: serverTimestamp() }
@@ -72,6 +73,29 @@ export default function ChallengeDetailScreen({ route, navigation }) {
             totalCheckIns: increment(1),
             lastCheckInDate: today,
           }
+        );
+
+        // Notify all other participants
+        const participantsSnap = await getDocs(
+          collection(db, "challenges", challengeId, "participants")
+        );
+        const otherUids = participantsSnap.docs
+          .map((d) => d.data().userId)
+          .filter((uid) => uid !== user.uid);
+
+        // Get each user's push token and send notification
+        await Promise.all(
+          otherUids.map(async (uid) => {
+            const userSnap = await getDoc(doc(db, "users", uid));
+            const token = userSnap.data()?.pushToken;
+            if (token) {
+              await sendPushNotification(
+                token,
+                "Someone checked in! 🎉",
+                `${user.displayName} just completed "${challenge.title}"!`
+              );
+            }
+          })
         );
       } catch (err) {
         Alert.alert("Error", err.message);
