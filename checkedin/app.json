@@ -1,16 +1,15 @@
 {
   "expo": {
-    "name": "checkedin",
+    "name": "CheckedIn",
     "slug": "checkedin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#6C63FF"
     },
     "ios": {
       "supportsTablet": true
@@ -20,16 +19,30 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6C63FF"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.bit_craft.checkedin"
+      "package": "com.checkedin.app",
+      "permissions": [
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#6C63FF"
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "328a87eb-1db7-4bfe-86b4-eb3dacbd9cad"
       }
-    }
+    },
+    "owner": "bit_craft"
   }
 }
