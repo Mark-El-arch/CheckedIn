@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import {
   updateProfile, updateEmail, updatePassword,
-  reauthenticateWithCredential, EmailAuthProvider, deleteUser,
+  reauthenticateWithCredential, EmailAuthProvider, deleteUser, signOut,
 } from "firebase/auth";
 import { auth } from "../../firebase";
 
@@ -178,6 +178,27 @@ export default function AccountScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Logout */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Session</Text>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={() => {
+            if (Platform.OS === "web") {
+              const confirmed = window.confirm("Log out?");
+              if (confirmed) signOut(auth);
+            } else {
+              Alert.alert("Log out", "Are you sure?", [
+                { text: "Cancel" },
+                { text: "Log out", onPress: () => signOut(auth) },
+              ]);
+            }
+          }}
+        >
+          <Text style={styles.logoutBtnText}>👋 Log Out</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Delete Account */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Danger Zone</Text>
@@ -215,6 +236,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#6C63FF", padding: 14, borderRadius: 10, alignItems: "center",
   },
   btnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  logoutBtn: {
+  backgroundColor: "#FFF8E1", padding: 14, borderRadius: 10,
+  alignItems: "center", borderWidth: 1, borderColor: "#FFE082",
+  },
+  logoutBtnText: { color: "#F57F17", fontWeight: "700", fontSize: 15 },
   deleteBtn: {
     backgroundColor: "#FFF0F0", padding: 14, borderRadius: 10,
     alignItems: "center", borderWidth: 1, borderColor: "#FFCDD2",
