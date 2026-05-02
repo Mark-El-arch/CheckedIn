@@ -1,9 +1,8 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 
-// How notifications appear when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -12,7 +11,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Request permission and save push token to Firestore
 export const registerForPushNotifications = async () => {
   if (!Device.isDevice) {
     console.log("Push notifications only work on a real device.");
@@ -28,40 +26,65 @@ export const registerForPushNotifications = async () => {
   }
 
   if (finalStatus !== "granted") {
-    console.log("Permission not granted for notifications.");
+    console.log("Notification permission denied.");
     return null;
   }
 
-  const tokenData = await Notifications.getExpoPushTokenAsync({
-    projectId: "328a87eb-1db7-4bfe-86b4-eb3dacbd9cad"
-  });
-  const token = tokenData.data;
+  try {
+    const tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId: "328a87eb-1db7-4bfe-86b4-eb3dacbd9cad",
+    });
+    const token = tokenData.data;
+    console.log("Push token:", token);
 
-  // Save token to this user's Firestore doc
-  const user = auth.currentUser;
-  if (user) {
-    await updateDoc(doc(db, "users", user.uid), { pushToken: token });
+    const user = auth.currentUser;
+    if (user) {
+      // Use setDoc with merge so it works whether doc exists or not
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          pushToken: token,
+          name: user.displayName,
+          email: user.email,
+        },
+        { merge: true }
+      );
+      console.log("Token saved to Firestore.");
+    }
+    return token;
+  } catch (err) {
+    console.log("Error getting push token:", err.message);
+    return null;
   }
-
-  return token;
 };
 
-// Send a push notification via Expo's Push API
 export const sendPushNotification = async (token, title, body) => {
-  if (!token) return;
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      to: token,
-      title,
-      body,
-      sound: "default",
-    }),
-  });
+  if (!token) {
+    console.log("No token provided, skipping notification.");
+    return;
+  }
+  try {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        to: token,
+        title,
+        body,
+        sound: "default",
+        priority: "high",
+      }),
+    });
+    const result = await response.json();
+    console.log("Notification result:", JSON.stringify(result));
+  } catch (err) {
+    console.log("Error sending notification:", err.message);
+  }
 };
 
-// Schedule a daily reminder at 8am
 export const scheduleDailyReminder = async (challengeTitle) => {
   await Notifications.cancelAllScheduledNotificationsAsync();
   await Notifications.scheduleNotificationAsync({
