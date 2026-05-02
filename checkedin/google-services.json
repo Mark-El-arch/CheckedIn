@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "133359152998",
+    "project_id": "checkedin-app-e5688",
+    "storage_bucket": "checkedin-app-e5688.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133359152998:android:3e9bc519ba36f3ccfce2a7",
+        "android_client_info": {
+          "package_name": "Checked.In"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrAsrYINK7S1f0M7EwXgmXU3IEhS9GJ0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
